@@ -1,5 +1,5 @@
 ﻿// ==UserScript==
-// @version         1.9.6.1
+// @version         1.9.6.2
 // @name            YouTube +
 // @namespace       https://github.com/ParticleCore
 // @description     YouTube with more freedom
@@ -1372,7 +1372,13 @@
                     enhancedDetails.link = document.createElement("a");
                     enhancedDetails.link.id = "uploaded-videos";
                     enhancedDetails.username.appendChild(enhancedDetails.link);
-                    enhancedDetails.user = enhancedDetails.username.querySelector('a').href.match(/(UC.+$)/)[1];
+                    enhancedDetails.user = document.querySelector("[itemprop='channelId']");
+                    if (enhancedDetails.user) {
+                        enhancedDetails.user = enhancedDetails.user.getAttribute("content");
+                    }
+                    else {
+                        enhancedDetails.user = enhancedDetails.username.querySelector('a').href.match(/(UC.+$)/)[1];
+                    }
                     if (cid[enhancedDetails.user]) {
                         enhancedDetails.link.textContent = cid[enhancedDetails.user];
                         setVideoCount();

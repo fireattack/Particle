@@ -1,5 +1,5 @@
 ﻿// ==UserScript==
-// @version         1.9.6.2
+// @version         1.9.6.3
 // @name            YouTube +
 // @namespace       https://github.com/ParticleCore
 // @description     YouTube with more freedom
@@ -1367,18 +1367,10 @@
                 }
             }
             function getVideoCount() {
-                enhancedDetails.username = document.querySelector(".yt-user-info");
                 if (!document.getElementById("uploaded-videos") && enhancedDetails.username) {
                     enhancedDetails.link = document.createElement("a");
                     enhancedDetails.link.id = "uploaded-videos";
                     enhancedDetails.username.appendChild(enhancedDetails.link);
-                    enhancedDetails.user = document.querySelector("[itemprop='channelId']");
-                    if (enhancedDetails.user) {
-                        enhancedDetails.user = enhancedDetails.user.getAttribute("content");
-                    }
-                    else {
-                        enhancedDetails.user = enhancedDetails.username.querySelector('a').href.match(/(UC.+$)/)[1];
-                    }
                     if (cid[enhancedDetails.user]) {
                         enhancedDetails.link.textContent = cid[enhancedDetails.user];
                         setVideoCount();
@@ -1392,11 +1384,11 @@
                 isLive = details.target.response.querySelector(".yt-badge-live");
                 if (!isLive) {
                     retry = details.target.responseURL.split("/videos").length < 2;
-                    details = details.target.response.querySelectorAll("[data-context-item-id='" + window.ytplayer.config.args.video_id + "'] .yt-lockup-meta-info li");
+                    details = details.target.response.querySelectorAll("[data-context-item-id='" + enhancedDetails.video_id + "'] .yt-lockup-meta-info li");
                     if (details && details.length > 0 && enhancedDetails.watchTime.textContent.split("·").length < 2) {
                         enhancedDetails.watchTime.textContent += " · " + details[retry ? 0 : 1].textContent;
-                    } else if (retry && window.ytplayer && window.ytplayer.config && window.ytplayer.config.args && window.ytplayer.config.args.ucid) {
-                        localXHR("GET", getChannelInfo, "/channel/" + window.ytplayer.config.args.ucid + "/videos", "doc");
+                    } else if (retry && window.ytplayer && window.ytplayer.config && window.ytplayer.config.args && enhancedDetails.user) {
+                        localXHR("GET", getChannelInfo, "/channel/" + enhancedDetails.user + "/videos", "doc");
                     }
                 }
             }
@@ -1404,11 +1396,20 @@
                 enhancedDetails.watchTime = document.querySelector(".watch-time-text");
                 if (enhancedDetails.watchTime && !enhancedDetails.watchTime.fetching && window.ytplayer && window.ytplayer.config) {
                     enhancedDetails.watchTime.fetching = true;
-                    localXHR("GET", getChannelInfo, "/channel/" + window.ytplayer.config.args.ucid + "/search?query=%22" + window.ytplayer.config.args.video_id + "%22", "doc");
+                    localXHR("GET", getChannelInfo, "/channel/" + enhancedDetails.user + "/search?query=%22" + enhancedDetails.video_id + "%22", "doc");
                 }
             }
             function enhancedDetails() {
                 if (window.location.pathname === "/watch") {
+                    enhancedDetails.username = document.querySelector(".yt-user-info");
+                    enhancedDetails.user = document.querySelector("[itemprop='channelId']");
+                    if (enhancedDetails.user) {
+                        enhancedDetails.user = enhancedDetails.user.getAttribute("content");
+                    }
+                    else {
+                        enhancedDetails.user = enhancedDetails.username.querySelector('a').href.match(/(UC.+$)/)[1];
+                    }
+                    enhancedDetails.video_id = window.location.href.match(/v=([\w-_]+)/)[1];
                     if (user_settings.VID_VID_CNT) {
                         getVideoCount();
                     }
